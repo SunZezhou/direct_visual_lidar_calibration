@@ -9,16 +9,17 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if($ENV{ROS_VERSION} EQUAL 1)
+# if($ENV{ROS_VERSION} EQUAL 1)
+# if (1)
   # ROS1
   find_package(catkin REQUIRED COMPONENTS rosbag sensor_msgs cv_bridge)
   catkin_package()
-else()
-  # ROS2
-  find_package(ament_cmake_auto REQUIRED)
-  find_package(ament_cmake_python REQUIRED)
-  ament_auto_find_build_dependencies()
-endif()
+# else()
+#   # ROS2
+#   find_package(ament_cmake_auto REQUIRED)
+#   find_package(ament_cmake_python REQUIRED)
+#   ament_auto_find_build_dependencies()
+# endif()
 
 find_package(PCL REQUIRED)
 find_package(Ceres REQUIRED)
@@ -26,6 +27,7 @@ find_package(GTSAM REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 find_package(Iridescence REQUIRED)
+find_package(Sophus REQUIRED)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -78,7 +80,8 @@ target_link_libraries(direct_visual_lidar_calibration
 )
 
 
-if($ENV{ROS_VERSION} EQUAL 1)
+# if($ENV{ROS_VERSION} EQUAL 1)
+# if (1)
   # ROS1
   add_executable(preprocess
     src/preprocess_ros1.cpp
@@ -92,15 +95,15 @@ if($ENV{ROS_VERSION} EQUAL 1)
   target_link_libraries(preprocess
     ${catkin_LIBRARIES}
   )
-else()
-  # ROS2
-  ament_auto_add_executable(preprocess
-    src/preprocess_ros2.cpp
-  )
-  target_link_libraries(preprocess
-    direct_visual_lidar_calibration
-  )
-endif()
+# else()
+#   # ROS2
+#   ament_auto_add_executable(preprocess
+#     src/preprocess_ros2.cpp
+#   )
+#   target_link_libraries(preprocess
+#     direct_visual_lidar_calibration
+#   )
+# endif()
 
 # preprocess_map
 add_executable(preprocess_map
@@ -173,12 +176,13 @@ install(
   lib/${PROJECT_NAME}
 )
 
-if($ENV{ROS_VERSION} EQUAL 1)
-  # ROS1
-else()
-  # ROS2
-  ament_python_install_package(${PROJECT_NAME})
-  install(PROGRAMS scripts/find_matches_superglue.py DESTINATION lib/${PROJECT_NAME})
-  ament_export_libraries(direct_visual_lidar_calibration)
-  ament_auto_package()
-endif()
+# # if($ENV{ROS_VERSION} EQUAL 1)
+# if (1)
+#   # ROS1
+# else()
+#   # ROS2
+#   ament_python_install_package(${PROJECT_NAME})
+#   install(PROGRAMS scripts/find_matches_superglue.py DESTINATION lib/${PROJECT_NAME})
+#   ament_export_libraries(direct_visual_lidar_calibration)
+#   ament_auto_package()
+# endif()

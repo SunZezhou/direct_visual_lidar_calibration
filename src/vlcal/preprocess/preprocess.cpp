@@ -62,7 +62,7 @@ bool Preprocess::run(int argc, char** argv) {
 
   positional_options_description p;
   p.add("data_path", 1);
-  p.add("dst_path", 2);
+  p.add("dst_path", 1);
 
   variables_map vm;
   store(command_line_parser(argc, argv).options(description).positional(p).run(), vm);
@@ -81,12 +81,21 @@ bool Preprocess::run(int argc, char** argv) {
 
   std::vector<std::string> bag_filenames;
   for (const auto& path : std::filesystem::directory_iterator(data_path)) {
+    std::cout << "bag path: " << path.path() << std::endl;
     if (!valid_bag(path.path().string())) {
+      std::cout << "bag is valid !" << std::endl;
       continue;
     }
 
     bag_filenames.emplace_back(path.path().string());
   }
+  // std::string bag_path;
+  // bag_path = "/home/szz/Documents/direct_visual_lidar_calibration/livox/2023-07-07-15-40-36.bag";
+  // if(valid_bag(bag_path)) {
+  //   std::cout << "bag path: " << bag_path << std::endl;
+  //   std::cout << "bag is valid !" << std::endl;
+  //   bag_filenames.emplace_back(bag_path);
+  // }
 
   std::cout << "input_bags:" << std::endl;
   for (const auto& bag_filename : bag_filenames) {
@@ -349,13 +358,15 @@ std::tuple<std::string, cv::Size, std::vector<double>, std::vector<double>> Prep
   const std::string& bag_filename,
   const std::string& camera_info_topic,
   const std::string& image_topic) {
-  //
+  
   cv::Size image_size = get_image_size(bag_filename, image_topic);
+  std::cout << "width: " << image_size.width << " height: " << image_size.height << std::endl;
   if (image_size.width == 0 && image_size.height == 0) {
     std::cerr << vlcal::console::bold_yellow << "warning: image size is not set (image_topic=" << image_topic << ")" << vlcal::console::reset << std::endl;
   }
 
   std::string camera_model = vm["camera_model"].as<std::string>();
+  std::cout << "camera_model: " << camera_model << std::endl;
   if (camera_model != "auto") {
     const std::unordered_set<std::string> valid_camera_models = {"plumb_bob", "fisheye", "equidistant", "omnidir", "equirectangular"};
     if (!valid_camera_models.count(camera_model)) {
@@ -398,6 +409,7 @@ std::tuple<std::string, cv::Size, std::vector<double>, std::vector<double>> Prep
 
   std::cout << "try to get the camera model automatically" << std::endl;
   auto [distortion_model, intrinsics, distortion_coeffs] = get_camera_info(bag_filename, camera_info_topic);
+  std::cout << "distortion_model: " << distortion_model << std::endl;
   return {distortion_model, image_size, intrinsics, distortion_coeffs};
 }
 

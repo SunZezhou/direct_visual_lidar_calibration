@@ -52,11 +52,43 @@ class PreprocessROS1 : public Preprocess {
 protected:
   template <typename T>
   boost::shared_ptr<T> get_first_message(const std::string& bag_filename, const std::string& topic) const {
+    std::cout << "bag_filename: " << bag_filename << std::endl;
+    std::cout << "topic: " << topic << std::endl;
+    rosbag::Bag bag(bag_filename);
+    rosbag::View view(bag, rosbag::TopicQuery(topic));
+
+    std::cout << "topic num: " << typeid(T).name() << std::endl;
+    for (const auto m : view) {
+      // std::cout << "m type: " << m.getDataType() << std::endl;
+      // std::cout << "m type: " << m.isType<T>() << std::endl;
+
+      const auto msg = m.instantiate<T>();
+      if (msg) {
+        return msg;
+      }
+    }
+
+    std::cerr << console::yellow;
+    std::cerr << "warning: bag does not contain topic" << std::endl;
+    std::cerr << "       : bag_filename=" << bag_filename << std::endl;
+    std::cerr << "       : topic=" << topic << std::endl;
+    std::cerr << console::reset;
+
+    return nullptr;
+  }
+
+  boost::shared_ptr<sensor_msgs::CameraInfo> get_camerainfo_msg(const std::string& bag_filename, const std::string& topic) {
+    std::cout << "bag_filename: " << bag_filename << std::endl;
+    std::cout << "topic: " << topic << std::endl;
     rosbag::Bag bag(bag_filename);
     rosbag::View view(bag, rosbag::TopicQuery(topic));
 
     for (const auto m : view) {
-      const auto msg = m.instantiate<T>();
+      // std::cout << "m type: " << m.getDataType() << std::endl;
+      // std::cout << "m type: " << m.isType<T>() << std::endl;
+
+      const auto msg = m.instantiate<sensor_msgs::CameraInfo>();
+
       if (msg) {
         return msg;
       }
@@ -73,6 +105,7 @@ protected:
 
   virtual bool valid_bag(const std::string& bag_filename) override {
     rosbag::Bag bag(bag_filename);
+    std::cout << "bag.isOpen(): " << bag.isOpen() << std::endl;
     return bag.isOpen();
   }
 
@@ -112,15 +145,21 @@ protected:
   }
 
   virtual std::tuple<std::string, std::vector<double>, std::vector<double>> get_camera_info(const std::string& bag_filename, const std::string& camera_info_topic) override {
-    const auto camera_info_msg = get_first_message<sensor_msgs::CameraInfo>(bag_filename, camera_info_topic);
+    std::cout << "camera_info_topic: " << camera_info_topic << std::endl;
+    // sensor_msgs::CameraInfo::ConstPtr camera_info_msg = get_first_message<sensor_msgs::CameraInfo>(bag_filename, camera_info_topic);
     std::vector<double> intrinsic(4);
-    intrinsic[0] = camera_info_msg->K[0];
-    intrinsic[1] = camera_info_msg->K[4];
-    intrinsic[2] = camera_info_msg->K[2];
-    intrinsic[3] = camera_info_msg->K[5];
-    std::vector<double> distortion_coeffs = camera_info_msg->D;
-
-    return {camera_info_msg->distortion_model, intrinsic, distortion_coeffs};
+    std::vector<double> distortion_coeffs;
+    std::string distortion_model = "plumb_bob";
+    intrinsic[0] = 1452.711762;
+    intrinsic[1] = 1455.877532;
+    intrinsic[2] = 1265.258952;
+    intrinsic[3] = 1045.818594;
+    std::vector<double> D = {-0.042036, 0.087317, 0.002386, 0.05630, -0.042511};
+    distortion_coeffs = D;
+    std::cout << "camera_info_msg->distortion_model: " << distortion_model << std::endl;
+    std::cout << "intrinsic: " << intrinsic[0] << std::endl;
+    std::cout << "distortion_coeffs: " << distortion_coeffs[0] << std::endl;
+    return {distortion_model, intrinsic, distortion_coeffs};
   }
 
   virtual cv::Mat get_image(const std::string& bag_filename, const std::string& image_topic) override {

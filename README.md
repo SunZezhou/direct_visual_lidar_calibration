@@ -1,5 +1,13 @@
 # direct_visual_lidar_calibration
 
+## Modificaiton
+
+- rosbag instantiate cannot read sensor_msgs::CameraInfo correctly, so I maually write camera parameters.
+
+- Attention: Need insall GTSAM (4.2A9), fmt (git clone https://github.com/fmtlib/fmt.git, checkout 5.3.0), Sophus in order. 
+
+## Original
+
 This package provides a toolbox for LiDAR-camera calibration that is: 
 
 - **Generalizable**: It can handle various LiDAR and camera projection models including spinning and non-repetitive scan LiDARs, and pinhole, fisheye, and omnidirectional projection cameras.
